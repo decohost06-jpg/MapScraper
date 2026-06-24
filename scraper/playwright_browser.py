@@ -81,9 +81,11 @@ class PlaywrightMaps:
         return ""
 
     def _extract_name(self) -> str:
+        invalid_tokens = {"résultats", "results", "recherche", "search"}
         for selector in ["h1", "h2", "h3", "div[aria-level='1']", "div[role='heading']"]:
             text = self._extract_text(selector)
-            if text:
+            normalized = self._normalize_text(text)
+            if text and not any(token in normalized for token in invalid_tokens):
                 return text
         return ""
 
