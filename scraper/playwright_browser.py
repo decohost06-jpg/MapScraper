@@ -60,8 +60,15 @@ class PlaywrightMaps:
         if not self._play:
             self.start()
         url = f"https://www.google.com/maps/search/{quote_plus(query)}"
-        self.page.goto(url, wait_until="networkidle")
-        self.page.wait_for_timeout(wait * 1000)
+        self.page.goto(url, wait_until="domcontentloaded", timeout=60000)
+        try:
+            consent_btn = self.page.locator("button[aria-label*='Accept']").first
+            if consent_btn.is_visible(timeout=3000):
+                consent_btn.click()
+                self.page.wait_for_timeout(2000)
+        except:
+            pass
+        self.page.wait_for_timeout(3000)
         return self.page.content()
 
     def _extract_text(self, selector: str) -> str:
@@ -72,6 +79,16 @@ class PlaywrightMaps:
         except Exception:
             pass
         return ""
+
+    def _extract_name(self) -> str:
+        for selector in ["h1", "h2", "h3", "div[aria-level='1']", "div[role='heading']"]:
+            text = self._extract_text(selector)
+            if text:
+                return text
+        return ""
+
+    def _normalize_text(self, value: str) -> str:
+        return " ".join(value.lower().strip().split())
 
     def _extract_phone(self) -> str:
         try:
@@ -158,16 +175,17 @@ class PlaywrightMaps:
                     except Exception:
                         pass
 
-                    name = self._extract_text('h1')
+                    name = self._extract_name() or self._extract_text('h1') or self._extract_text('h2')
                     phone = self._extract_phone()
                     address = self._extract_address()
                     detail_url = self.page.url
 
                     record_url = url or detail_url
-                    if record_url in seen_urls:
+                    record_key = record_url or self._normalize_text(f"{name}|{address}")
+                    if record_key in seen_urls:
                         continue
 
-                    seen_urls.add(record_url)
+                    seen_urls.add(record_key)
                     places.append({
                         "name": name,
                         "phone_candidates": [phone] if phone else [],
