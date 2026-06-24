@@ -1,0 +1,29 @@
+# Google Maps Manual Scraper (starter)
+
+This project contains a starter implementation for scraping Google Maps (manual, without using the official API).
+
+Important: scraping Google Maps may violate Google's Terms of Service. Use only for small-scale testing and verify legal allowances before running at scale.
+
+Files of interest:
+- `Config.py` — configuration for queries and runtime
+- `scraper/google_maps_browser.py` — Selenium-based browser wrapper (starter)
+- `scraper/parser.py` — simple parser utilities and phone extraction
+- `scraper/main.py` — runner that orchestrates queries and writes Excel output
+
+Quick start (create venv, install deps):
+
+```bash
+python -m venv .venv
+source .venv/bin/activate  # or .venv\Scripts\activate on Windows
+pip install -r requirements.txt
+python scraper/main.py
+```
+
+selenium>=4.0.0
+webdriver-manager
+pandas
+openpyxl
+beautifulsoup4
+lxml
+requests
+playwright
